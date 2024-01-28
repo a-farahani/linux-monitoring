@@ -1,9 +1,11 @@
 import requests
 import json
 import telegram
-import time
 from dotenv import load_dotenv
 import os
+import prettytable as pt
+import time
+
 
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
@@ -13,7 +15,7 @@ Port = os.getenv('Port')
 
 def send_message(message):
     bot = telegram.Bot(token=TOKEN)
-    bot.send_message(chat_id=CHAT_ID, text=message)
+    bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='HTML')
 
 def checkTcp():
   url = f"""https://check-host.net/check-tcp?host={Hostname}:{Port}&node=ir5.node.check-host.net&node=ir6.node.check-host.net&node=ir3.node.check-host.net&node=ir1.node.check-host.net"""
@@ -33,9 +35,14 @@ def checkTcp():
   json_response = json.loads(response.text)
   request_id=json_response["request_id"]
 
-  return request_id
+  return request_id or 0
 
 def checkResult(request_id):
+
+  if request_id == 0:
+     checkResult(checkTcp())
+     return
+  
   url = f"https://check-host.net/check-result/{request_id}"
   payload = {}
   headers = {
@@ -43,6 +50,7 @@ def checkResult(request_id):
   }
 
   try:
+    time.sleep(10)
     response = requests.get(url, headers=headers, data=payload)
   except requests.exceptions.Timeout:
       exit
@@ -52,26 +60,24 @@ def checkResult(request_id):
       raise SystemExit(e)
   
   json_response = json.loads(response.text)
-  try:
-    res1 = json_response["ir1.node.check-host.net"][0]["time"]
-    send_message(f"ir1 {res1}")
-  except:
-      print(json_response["ir1.node.check-host.net"])
-  try:
-    res3 = json_response["ir3.node.check-host.net"][0]["time"]
-    send_message(f"ir3 {res3}")
-  except:
-      print(json_response["ir3.node.check-host.net"])
-  try:
-    res5 = json_response["ir5.node.check-host.net"][0]["time"]
-    send_message(f"ir5 {res5}")
-  except:
-      print(json_response["ir5.node.check-host.net"])
-  try:
-    res6 = json_response["ir6.node.check-host.net"][0]["time"]
-    send_message(f"ir6 {res6}")
-  except:
-      print(json_response["ir6.node.check-host.net"])
+
+
+  res = f"Result: https://check-host.net/check-result/{request_id} \n\n"
+
+  table = pt.PrettyTable(['Name', 'Time'])
+  table.align['Name'] = 'l'
+  table.align['Time'] = 'r'
+  data = [
+      ('ir1', json_response["ir1.node.check-host.net"][0]["time"]),
+      ('ir3', json_response["ir3.node.check-host.net"][0]["time"]),
+      ('ir4', json_response["ir5.node.check-host.net"][0]["time"]),
+      ('ir6', json_response["ir6.node.check-host.net"][0]["time"]),
+  ]
+  for name, time1 in data:
+      table.add_row([name, time1])
+
+  res = res + f'<pre>{table}</pre>'
+  send_message(res)
 
 while True:
   checkResult(checkTcp())
