@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 import os
 import prettytable as pt
 import time as timepack
+import time
+import threading
 
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
@@ -58,7 +60,8 @@ def checkResult(request_id):
     data = []
     for node in Nodes:
         if json_response[node] != "None":
-            data.append((node.split(("."), 1)[0], json_response[node][0]["address"], json_response[node][0]["time"]))
+            data.append((node.split(("."), 1)[
+                        0], json_response[node][0]["address"], json_response[node][0]["time"]))
         else:
             data.append((node.split(("."), 1)[0], "None", "None"))
 
@@ -74,7 +77,10 @@ def checkResult(request_id):
     return send_message(res)
 
 
-while True:
+def run():
+    print(time.ctime())
     request_id = checkTcp()
     checkResult(request_id)
-    timepack.sleep(15*60)
+    threading.Timer(15*60, run).start()
+
+run()
