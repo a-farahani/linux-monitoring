@@ -9,6 +9,7 @@ import time
 import threading
 
 load_dotenv()
+Timer = int(os.getenv('Timer'))
 TOKEN = os.getenv('TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
 Hostname = os.getenv('Hostname')
@@ -81,6 +82,10 @@ def run():
     print(time.ctime())
     request_id = checkTcp()
     checkResult(request_id)
-    threading.Timer(15*60, run).start()
+    threading.Timer(Timer, run).start()
 
-run()
+
+try:
+    run()
+except:
+    run()
