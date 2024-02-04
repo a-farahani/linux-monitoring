@@ -1,2 +1,2 @@
 # linux-monitoring
-Monitor you server!
+Monitor your server!
