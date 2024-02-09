@@ -4,9 +4,11 @@ import telegram
 from dotenv import load_dotenv
 import os
 import prettytable as pt
-import time as timepack
 import time
-import threading
+# import threading
+from timeloop import Timeloop
+from datetime import timedelta
+import asyncio
 
 load_dotenv()
 Timer = int(os.getenv('Timer'))
@@ -17,9 +19,9 @@ Port = os.getenv('Port')
 Nodes = json.loads(os.getenv('Nodes'))
 
 
-def send_message(message):
+async def send_message(message):
     bot = telegram.Bot(token=TOKEN)
-    bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='HTML')
+    await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='HTML')
 
 
 def checkTcp():
@@ -47,7 +49,7 @@ def checkResult(request_id):
     payload = {}
     headers = {'Accept': 'application/json'}
     try:
-        timepack.sleep(5)
+        time.sleep(5)
         response = requests.get(url, headers=headers, data=payload)
         if response.status_code != 200:
             checkResult(request_id)
@@ -74,18 +76,17 @@ def checkResult(request_id):
         table.add_row([node_data, address_data, time_data])
 
     res = res + f'<pre>{table}</pre>'
+    
+    return asyncio.run(send_message(res))
 
-    return send_message(res)
 
+tl = Timeloop()
 
+@tl.job(interval=timedelta(seconds=Timer))
 def run():
-    print(time.ctime())
+    print(format(time.ctime()))
     request_id = checkTcp()
     checkResult(request_id)
-    threading.Timer(Timer, run).start()
-
-
-try:
-    run()
-except:
-    run()
+    
+if __name__ == "__main__":
+    tl.start(block=True)
