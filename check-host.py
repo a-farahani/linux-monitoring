@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 import os
 import prettytable as pt
 import time
-# import threading
 from timeloop import Timeloop
 from datetime import timedelta
 import asyncio
@@ -35,8 +34,10 @@ def checkTcp():
         response = requests.get(url, headers=headers, data=payload)
         if response.status_code != 200:
             checkTcp()
-    except:
+    except Exception as e:
+        print("checkTcp ERROR : "+str(e))
         checkTcp()
+    
     json_response = json.loads(response.text)
     request_id = json_response["request_id"]
     print(f"request_id: {request_id}")
@@ -53,8 +54,10 @@ def checkResult(request_id):
         response = requests.get(url, headers=headers, data=payload)
         if response.status_code != 200:
             checkResult(request_id)
-    except:
+    except Exception as e:
+        print("checkResult ERROR : "+str(e))
         checkResult(request_id)
+    
     json_response = json.loads(response.text)
     print(f"json_response: {json_response}")
 
@@ -85,8 +88,11 @@ tl = Timeloop()
 @tl.job(interval=timedelta(seconds=Timer))
 def run():
     print(format(time.ctime()))
-    request_id = checkTcp()
-    checkResult(request_id)
-    
+    try:
+        request_id = checkTcp()
+        checkResult(request_id)
+    except Exception as e:
+        print("run ERROR : "+str(e))
+
 if __name__ == "__main__":
     tl.start(block=True)
