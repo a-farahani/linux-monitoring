@@ -6,6 +6,6 @@ There is a Python code powered by [check-host.net API](https://check-host.net/ab
 
 ### How to use?
 
-1- clone latest release
+1- clone latest release \
 2- create `.env` like `.env.example` \
 3- run code with `bash ./run.sh`
