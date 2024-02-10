@@ -62,7 +62,7 @@ def checkResult(request_id):
 
     data = []
     for node in Nodes:
-        if json_response[node] != "None":
+        if type(json_response[node]) is list:
             data.append((node.split(("."), 1)[
                         0], json_response[node][0]["address"], json_response[node][0]["time"]))
         else:
