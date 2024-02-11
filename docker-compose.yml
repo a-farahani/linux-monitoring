@@ -1,0 +1,9 @@
+version: '3'
+services:
+  check-host:
+    image: alirezaf75/check-host:latest
+    container_name: check-host
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
